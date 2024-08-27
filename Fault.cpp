@@ -1,7 +1,17 @@
-#include "Fault.h"
-#include <assert.h>
+/*
+代码详解：
+#include "Fault.h": 引入之前定义的头文件，该头文件中声明了 FaultHandler 函数和相关的宏。
+#include <assert.h>: 引入标准库的断言支持，用于assert函数，这是最后的断言检查，库函数会检查其参数是否为假（0），如果为假则打印错误消息并终止程序。
+#if WIN32: 检查是否在Win32平台上编译运行，这是一个条件编译指令，用于区分不同操作系统平台。
+#include "windows.h": 在确认是Win32平台后，包含Windows系统的头文件。这是因为Windows平台上有特定的API，如 DebugBreak。
+DebugBreak(): 是Windows API中的一个函数，它会在调试器中触发一个断点，使得当断言失败时，程序运行会在这里暂停，开发者可以通过调试器查看调用栈、变量状态等信息。
+assert(0): 这是一个兜底的断言，它在非Win32平台上起作用，或者在Win32平台上没有调试器连接的情况下起作用。它会导致程序崩溃，并输出一条包含文件名和行号的信息，说明断言失败的位置。
+此函数的设计意图是在发生严重错误（通常是编程逻辑错误）时提供即时的反馈和调试支持，使开发者能够快速定位并解决问题。在产品实际部署时，可能需要将这些断言和错误处理机制替换或补充为更适合生产环境的错误处理策略，如记录日志、发送警报等。
+*/
+#include "Fault.h"  // 包含之前定义的头文件
+#include <assert.h> // 包含C标准库中的断言支持
 #if WIN32
-	#include "windows.h"
+    #include "windows.h" // 对于Win32平台，包含Windows特定的头文件
 #endif
 
 //----------------------------------------------------------------------------
@@ -10,9 +20,9 @@
 void FaultHandler(const char* file, unsigned short line)
 {
 #if WIN32
-	// If you hit this line, it means one of the ASSERT macros failed.
-    DebugBreak();
+    // 如果你的程序运行到这里，说明一个ASSERT宏触发了断言失败。
+    DebugBreak(); // 在Windows上调用DebugBreak()函数，引发一个调试中断。
 #endif
 
-	assert(0);
+    assert(0); // 使用标准库的assert函数强制断言失败，通常这会导致程序终止。
 }
